@@ -1,34 +1,87 @@
 "use strict";
 
 
-function add() {
+
+var lines = [];
+var lineType = "run";
+var selectedConnection	= null;
+var selectedBlock	= null;
+var keysPressed	= {Shift:false};
+
+function selectConnection(el) {
+	if (selectedConnection!=null) {unselectConnection();}
+	addClass(el,"-selected");
+	selectedConnection = el;
+}
+function unselectConnection() {
+	if (selectedConnection!=null) {
+		removeClass(selectedConnection,"-selected");
+		selectedConnection = null;
+	}
+}
+function selectBlock(el) {
+	if (selectedBlock!=null) {unselectBlock();}
+	addClass(el,"-selected");
+	selectedBlock = el;
+}
+function unselectBlock() {
+	if (selectedBlock!=null) {
+		removeClass(selectedBlock,"-selected");
+		selectedBlock = null;
+	}
+}
+
+
+
+
+
+function onAddBlock() {
 	document.body.appendChild(createBlock());
+}
+function onAddRow(type) {
+	if (selectedBlock!=null) {
+		addRow(selectedBlock,type);
+	}
+}
+function onLineToggle() {
+	if (lineType=="run") {
+		lineType = "value";
+	}
+	else {
+		lineType = "run";
+	}
 }
 
 
 function createBlock() {
 	var block	;
-	var moving	= false;
+	var pointerDown	= false;
+	var moving;
 	var moveStart;
 	var moveOffset;
 	
-	function addRow(el) {
-		el.appendChild(
-			createRow()
-		);
-	}
 	block = div(	"div", "block",
-		div("span","block-input", Div.attribute("contenteditable","true"),),
-		div("button","block-addButton",Div.text("Add"),Div.event("click",(e)=>{addRow(block);}), Div.event("pointerdown", (e)=>{e.preventDefault();e.stopPropagation();return false;}),),
+		createRow("input"),
+		////div("span","block-input", Div.attribute("contenteditable","true"),),
+		////div("button","block-addButton",Div.text("Add"),Div.event("click",(e)=>{addRow(block);}), ),///Div.event("pointerdown", (e)=>{e.preventDefault();e.stopPropagation();return false;}),
 		
 		Div.event("pointerdown", (e)=>{
-			moving = true;
-			block.setPointerCapture(e.pointerId);
-			moveStart = [e.clientX,e.clientY];
-			moveOffset = [block.offsetLeft-e.clientX, block.offsetTop-e.clientY];
+			if (selectedBlock!=block) {
+				pointerDown = true;
+				moving = false;
+				block.setPointerCapture(e.pointerId);
+				moveStart = [e.clientX,e.clientY];
+				moveOffset = [block.offsetLeft-e.clientX, block.offsetTop-e.clientY];
+			}
 		}),
 		Div.event("pointerup", (e)=>{
-			if (moving) {
+			if (pointerDown && !moving) {
+				if (selectedBlock!=block) {
+					selectBlock(block);
+				}
+			}
+			if (pointerDown) {
+				pointerDown = false;
 				moving = false;
 				block.releasePointerCapture(e.pointerId);
 				
@@ -38,19 +91,27 @@ function createBlock() {
 			}
 		}),
 		Div.event("pointermove", (e)=>{
-			if (moving && (Math.abs(moveStart[0]-e.clientX)>2 || Math.abs(moveStart[1]-e.clientY)>2)) {
+			if (moving) {
 				block.style.left = e.clientX+moveOffset[0] + 'px';
 				block.style.top = e.clientY+moveOffset[1] + 'px';
 			}
+			else if (pointerDown && (Math.abs(moveStart[0]-e.clientX)>2 || Math.abs(moveStart[1]-e.clientY)>2)) {
+				moving = true;
+			}
 		}),
 	)
-	
+	selectBlock(block);
 	return block;
 }
 
-function createRow() {
+function addRow(el, type) {
+	el.appendChild(
+		createRow(type)
+	);
+}
+function createRow(type) {
 	function createConnection() {
-		return div(	"div","block-connection",
+		return div(	"div","block-connection","block-connectoin-"+lineType,
 			Div.event("click",(e)=>{contactSelected(e.target);})
 		);
 	}
@@ -59,13 +120,36 @@ function createRow() {
 			Div.attribute("contenteditable","true"),
 		);
 	}
-	return div(	"div","block-row",
-		createConnection(),
-		createInput(),
-		div("div","block-row-middlePadding"),
-		createInput(),
-		createConnection(),
-	);
+	//---
+	var el;
+	if (type=="input"){
+		el = div(	"div","block-row",
+			createInput(),
+			
+			Div.event("dblclick",(e)=>{el.parentNode.removeChild(el);}),
+		);
+	}
+	else if (type=="connection"){
+		el = div(	"div","block-row",
+			createConnection(),
+			
+			Div.event("dblclick",(e)=>{el.parentNode.removeChild(el);}),
+		);
+	}
+	else {
+		let leftSide	= type=="left"||type=="both";
+		let rightSide	= type=="right"||type=="both";
+		el = div(	"div","block-row",
+			(leftSide	?createConnection()	:null),
+			(leftSide	?createInput()	:null),
+			div("div","block-row-middlePadding"),
+			(rightSide	?createInput()	:null),
+			(rightSide	?createConnection()	:null),
+			
+			Div.event("dblclick",(e)=>{el.parentNode.removeChild(el);}),
+		);
+	}
+	return el;
 }
 
 
@@ -73,7 +157,7 @@ function createRow() {
 
 
 function createLine() {
-	return div(	"div", "line",);
+	return div(	"div", "line", "line-"+lineType);
 }
 function moveLine(line, x1,y1,x2,y2) {
 	var r	= Math.sqrt(	((x1-x2)*(x1-x2))	+	((y1-y2)*(y1-y2))	);
@@ -100,29 +184,27 @@ function moveLineBetween(line, el1, el2) {
 
 
 
-var lines = [];
-
-var selectedContact = null;
 function contactSelected(el) {
-	if (selectedContact==null) {
-		selectedContact = el;
-		selectedContact.style.background = "red";
+	if (selectedConnection==null) {
+		selectConnection(el);
 	}
-	else if (selectedContact==el) {
-		for (var i=lines.length-1; i>=0; i--) {
-			let line = lines[i];
-			if (el==line.from || el==line.to) {
-				line.line.parentNode.removeChild(line.line);
-				lines.splice(i,1);
-			}
-		}
+	else if (selectedConnection==el) {
+		removeClass(el,"block-connectoin-run");
+		removeClass(el,"block-connectoin-value");
+		addClass(el,"block-connectoin-"+lineType);
+		////for (var i=lines.length-1; i>=0; i--) {
+		////	let line = lines[i];
+		////	if (el==line.from || el==line.to) {
+		////		line.line.parentNode.removeChild(line.line);
+		////		lines.splice(i,1);
+		////	}
+		////}
 		
-		selectedContact.style.background = null;
-		selectedContact = null;
+		unselectConnection();
 	}
 	else {
 		var line = createLine();
-		moveLineBetween(line, selectedContact, el);
+		moveLineBetween(line, selectedConnection, el);
 		line.addEventListener("click",(e)=>{
 			for (var i=0; i<lines.length; i++) {
 				if (lines[i].line == e.target) {
@@ -133,10 +215,47 @@ function contactSelected(el) {
 			}
 		});
 		document.body.appendChild(line);
-		moveLineBetween(line, selectedContact, el);
-		lines.push({line:line,from:selectedContact,to:el});
+		moveLineBetween(line, selectedConnection, el);
+		lines.push({line:line,from:selectedConnection,to:el});
 		
-		selectedContact.style.background = null;
-		selectedContact = null;
+		unselectConnection();
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+function removeClass(el, className) {
+	el.className =
+		el.className
+			.replace(new RegExp('(?:^|\\s)' + className + '(?:\\s|$)'), ' ')
+}
+function addClass(el, className) {
+	el.className += " " + className
+}
+function hasClass(el, className) {
+	if (el.className.match(new RegExp('(?:^|\\s)' + className + '(?:\\s|$)')) !== null){
+		return true
+	}
+	return false
+}
+
+
+document.addEventListener("keydown",(e)=>{
+	if (event.key=="Escape") {
+		unselectBlock();
+		unselectConnection();
+	}
+	if (event.key=="Shift") {
+		keysPressed["Shift"] = true;
+	}
+});

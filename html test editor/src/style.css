@@ -8,6 +8,19 @@
 	padding	:	4px	;
 	position	:	absolute	;
 }
+.block.-selected {
+	border-color	:	red	;
+}
+.block:not(.-selected) {
+	cursor	:	move	;
+}
+.block:not(.-selected) .block-connection {
+	cursor	:	default	;
+	pointer-events	:	initial	;
+}
+.block:not(.-selected) *:not(.block-connection) {
+	pointer-events	:	none	;
+}
 
 .block-input {
 	min-width	:	1em	;
@@ -25,6 +38,9 @@
 	width	:	1em	;
 	height	:	1em	;
 }
+.block-connection.-selected {
+	background	:	red	;
+}
 .block-row-middlePadding {
 	flex	:	1	;
 	min-width	:	4px	;
@@ -36,4 +52,9 @@
 	position	:	absolute	;
 	height	:	2px	;
 	background	:	black	;
+}
+.line-run {
+	position	:	absolute	;
+	height	:	2px	;
+	background	:	blue	;
 }
