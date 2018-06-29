@@ -1,0 +1,39 @@
+
+
+
+.block {
+	display	:	inline-flex	;
+	flex-direction	:	column	;
+	border	:	solid	;
+	padding	:	4px	;
+	position	:	absolute	;
+}
+
+.block-input {
+	min-width	:	1em	;
+	padding	:	2px	;
+}
+
+
+.block-row {
+	display	:	flex	;
+	align-items	:	center	;
+	padding	:	1px	;
+}
+.block-connection {
+	background	:	black	;
+	width	:	1em	;
+	height	:	1em	;
+}
+.block-row-middlePadding {
+	flex	:	1	;
+	min-width	:	4px	;
+}
+
+
+
+.line {
+	position	:	absolute	;
+	height	:	2px	;
+	background	:	black	;
+}
