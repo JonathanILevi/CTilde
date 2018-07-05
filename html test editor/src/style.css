@@ -38,6 +38,9 @@
 	width	:	1em	;
 	height	:	1em	;
 }
+.block-connection-run {
+    background	:	blue	;
+}
 .block-connection.-selected {
 	background	:	red	;
 }
