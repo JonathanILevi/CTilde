@@ -115,8 +115,9 @@ function createRow(type) {
 			Div.event("click",(e)=>{contactSelected(e.target);})
 		);
 	}
-	function createInput() {
+	function createInput(side) {
 		return div(	"div","block-input",
+			"block-input-"+side,
 			Div.attribute("contenteditable","true"),
 		);
 	}
@@ -124,7 +125,7 @@ function createRow(type) {
 	var el;
 	if (type=="input"){
 		el = div(	"div","block-row",
-			createInput(),
+			createInput("left"),
 			
 			Div.event("dblclick",(e)=>{el.parentNode.removeChild(el);}),
 		);
@@ -141,9 +142,8 @@ function createRow(type) {
 		let rightSide	= type=="right"||type=="both";
 		el = div(	"div","block-row",
 			(leftSide	?createConnection()	:null),
-			(leftSide	?createInput()	:null),
-			div("div","block-row-middlePadding"),
-			(rightSide	?createInput()	:null),
+			(leftSide	?createInput("left")	:null),
+			(rightSide	?createInput("right")	:null),
 			(rightSide	?createConnection()	:null),
 			
 			Div.event("dblclick",(e)=>{el.parentNode.removeChild(el);}),

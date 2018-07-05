@@ -25,6 +25,10 @@
 .block-input {
 	min-width	:	1em	;
 	padding	:	2px	;
+	flex-grow	:	1	;
+}
+.block-input-right {
+	text-align	:	right	;
 }
 
 
