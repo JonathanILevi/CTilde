@@ -111,7 +111,7 @@ function addRow(el, type) {
 }
 function createRow(type) {
 	function createConnection() {
-		return div(	"div","block-connection","block-connectoin-"+lineType,
+		return div(	"div","block-connection","block-connection-"+lineType,
 			Div.event("click",(e)=>{contactSelected(e.target);})
 		);
 	}
@@ -189,9 +189,9 @@ function contactSelected(el) {
 		selectConnection(el);
 	}
 	else if (selectedConnection==el) {
-		removeClass(el,"block-connectoin-run");
-		removeClass(el,"block-connectoin-value");
-		addClass(el,"block-connectoin-"+lineType);
+		removeClass(el,"block-connection-run");
+		removeClass(el,"block-connection-value");
+		addClass(el,"block-connection-"+lineType);
 		////for (var i=lines.length-1; i>=0; i--) {
 		////	let line = lines[i];
 		////	if (el==line.from || el==line.to) {
