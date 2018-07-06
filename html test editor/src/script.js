@@ -251,11 +251,11 @@ function hasClass(el, className) {
 
 
 document.addEventListener("keydown",(e)=>{
-	if (event.key=="Escape") {
+	if (e.key=="Escape") {
 		unselectBlock();
 		unselectConnection();
 	}
-	if (event.key=="Shift") {
+	if (e.key=="Shift") {
 		keysPressed["Shift"] = true;
 	}
 });
