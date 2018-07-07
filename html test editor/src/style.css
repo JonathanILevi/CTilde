@@ -14,11 +14,11 @@
 .block:not(.-selected) {
 	cursor	:	move	;
 }
-.block:not(.-selected) .block-connection {
+.block:not(.-selected) .block-contact {
 	cursor	:	default	;
 	pointer-events	:	initial	;
 }
-.block:not(.-selected) *:not(.block-connection) {
+.block:not(.-selected) *:not(.block-contact) {
 	pointer-events	:	none	;
 }
 
@@ -37,15 +37,15 @@
 	align-items	:	center	;
 	padding	:	1px	;
 }
-.block-connection {
+.block-contact {
 	background	:	black	;
 	width	:	1em	;
 	height	:	1em	;
 }
-.block-connection-run {
+.block-contact-run {
     background	:	blue	;
 }
-.block-connection.-selected {
+.block-contact.-selected {
 	background	:	red	;
 }
 .block-row-middlePadding {
