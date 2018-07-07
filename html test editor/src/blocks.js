@@ -36,7 +36,6 @@ class Blocks {
 class Block {
 	constructor(blocks) {
 		this.blocks = blocks;
-		this.selected = false;
 		
 		this.domBlock = new DomBlock();
 		this.el=this.domBlock.getEl();
@@ -44,7 +43,7 @@ class Block {
 		
 		
 		document.addEventListener("keydown",(e)=>{
-			if (this.selected && e.ctrlKey) {
+			if (this.domBlock.getSelected() && e.ctrlKey) {
 				if (e.key=="l") {
 					this.domBlock.addDoor("in");
 					e.preventDefault();
@@ -60,12 +59,10 @@ class Block {
 	}
 	
 	onSelect() {
-		this.selected = true;
-		this.el.classList.add("-selected");
+		this.domBlock.setSelected(true);
 	}
 	onUnselect() {
-		this.selected = false;
-		this.el.classList.remove("-selected");
+		this.domBlock.setSelected(false);
 	}
 	
 	addMouseListeners() {
@@ -75,7 +72,7 @@ class Block {
 		var moveOffset;
 		
 		this.el.addEventListener("pointerdown", (e)=>{
-			if (!this.selected) {
+			if (!this.domBlock.getSelected()) {
 				pointerDown = true;
 				moving = false;
 				this.el.setPointerCapture(e.pointerId);
@@ -86,7 +83,7 @@ class Block {
 		});
 		this.el.addEventListener("pointerup", (e)=>{
 			if (pointerDown && !moving) {
-				if (!this.selected) {
+				if (!this.domBlock.getSelected()) {
 					this.blocks.selectBlock(this);
 				}
 			}
@@ -124,7 +121,8 @@ class DomBlock {
 		this._doorContacts	={in:[],out:[]};
 		this._doorInputs	={in:[],out:[]};
 		
-		this._pos = [0,0];
+		this._pos	= [0,0];
+		this._selected	= false;
 		
 		
 		this._el = div("div","block",
@@ -225,5 +223,18 @@ class DomBlock {
 		this._pos = pos;
 		this._el.style.left	= pos[0]+"px";
 		this._el.style.top	= pos[1]+"px";
+	}
+	
+	getSelected() {
+		return this._selected;
+	}
+	setSelected(selected) {
+		this._selected = selected;
+		if (selected) {
+			this._el.classList.add("-selected");
+		}
+		else {
+			this._el.classList.remove("-selected");
+		}
 	}
 }
