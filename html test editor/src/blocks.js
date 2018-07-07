@@ -102,8 +102,7 @@ class Block {
 		});
 		this.el.addEventListener("pointermove", (e)=>{
 			if (moving) {
-				this.el.style.left = e.clientX+moveOffset[0] + 'px';
-				this.el.style.top = e.clientY+moveOffset[1] + 'px';
+				this.domBlock.setPos([e.clientX+moveOffset[0], e.clientY+moveOffset[1]])
 				e.preventDefault();
 			}
 			else if (pointerDown && (Math.abs(moveStart[0]-e.clientX)>2 || Math.abs(moveStart[1]-e.clientY)>2)) {
@@ -124,6 +123,8 @@ class DomBlock {
 		this._doorRows	=[];
 		this._doorContacts	={in:[],out:[]};
 		this._doorInputs	={in:[],out:[]};
+		
+		this._pos = [0,0];
 		
 		
 		this._el = div("div","block",
@@ -213,5 +214,16 @@ class DomBlock {
 	}
 	getNumDoors(dir) {
 		return this._doorInputs[dir].length;
+	}
+	
+	
+	
+	getPos() {
+		return this._pos;
+	}
+	setPos(pos) {
+		this._pos = pos;
+		this._el.style.left	= pos[0]+"px";
+		this._el.style.top	= pos[1]+"px";
 	}
 }
