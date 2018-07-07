@@ -32,45 +32,31 @@ class Blocks {
 	}
 }
 
+
 class Block {
 	constructor(blocks) {
 		this.blocks = blocks;
 		this.selected = false;
 		
-		this.leftSide = [];
-		this.rightSide = [];
-		
-		this.createEl();
+		this.domBlock = new DomBlock();
+		this.el=this.domBlock.getEl();
+		this.addMouseListeners();
 		
 		
 		document.addEventListener("keydown",(e)=>{
 			if (this.selected && e.ctrlKey) {
 				if (e.key=="l") {
-					this.leftSide.push({"text":"","connection":null});
-					this.updateEl();
+					this.domBlock.addDoor("in");
 					e.preventDefault();
 				}
 				else if (e.key=="r") {
-					this.rightSide.push({"text":"","connection":null});
-					this.updateEl();
+					try {
+						this.domBlock.addDoor("out");
+					} catch{};
 					e.preventDefault();
 				}
 			}
 		});
-	}
-	
-	createEl() {
-		this.el = createBlock(this.leftSide,this.rightSide);
-		this.addMouseListeners();
-	}
-	updateEl() {
-		var oldEl = this.el;
-		var parent = this.el.parentElement;
-		this.createEl();
-		parent.replaceChild(this.el,oldEl);
-		if(this.selected) {
-			this.onSelect();
-		}
 	}
 	
 	onSelect() {
@@ -129,35 +115,103 @@ class Block {
 }
 
 
-function createBlock(leftSide,rightSide) {
-	function createRow(l,r) {
-		function createContact() {
-			return div(	"div","block-contact",
-				////Div.event("click",(e)=>{contactSelected(e.target);})
-			);
+class DomBlock {
+	constructor() {
+		this._el	;
+		this._header	;
+		this._headerContact	;
+		this._headerInput	;
+		this._doorRows	=[];
+		this._doorContacts	={in:[],out:[]};
+		this._doorInputs	={in:[],out:[]};
+		
+		
+		this._el = div("div","block",
+			this._cRow(	(el)=>{this._header=el},
+				this._cDoor(	"in", (contact,input)=>{this._headerContact=contact;this._headerInput=input;}
+				),
+				null,
+			),
+			////createRow(	true,false, (row,contact,input)=>{	this._header	=row	;
+			////		this._headerContact	=contact	;
+			////		this._headerInput	=input	;	}),
+		)
+	}
+	
+	_addRowEl(row) {
+		this._el.appendChild(row);
+	}
+	_addDoorToRow(dir,rowEl,door){
+		if (dir=="in") {
+			rowEl.insertBefore(door.input	, rowEl.childNodes[0]);
+			rowEl.insertBefore(door.contact	, rowEl.childNodes[0]);
 		}
-		function createInput(side) {
-			return div(	"div","block-input",
-				"block-input-"+side,
+		else {
+			rowEl.appendChild(door.input);
+			rowEl.appendChild(door.contact);
+		}
+	}
+	_cDoor(dir,callback) {
+		var door={
+			contact:div("div","block-contact","-"+dir,),
+			input:div(	"div","block-input","-"+dir,
 				Div.attribute("contenteditable","true"),
+			)
+		}
+		if (callback) callback(door.contact, door.input);
+		return door;
+	}
+	_cRow(callback,in_,out) {
+		var rowEl=div("div","block-row");
+		if (in_) {
+			rowEl.appendChild(in_.contact);
+			rowEl.appendChild(in_.input);
+			
+		}
+		if (out) {
+			rowEl.appendChild(out.input);
+			rowEl.appendChild(out.contact);
+			
+		}
+		callback(rowEl);
+		return rowEl;
+	}
+	
+	getEl() {
+		return this._el;
+	}
+	
+	getHeaderText() {
+		this._headerContact.innerText;
+	}
+	setHeaderText(text) {
+		this._headerContact.innerText=text;
+	}
+	
+	addDoor(dir, text) {
+		if (this.getNumDoors(dir)<this._doorRows.length) {
+			this._addDoorToRow(	dir,
+				this._doorRows[this.getNumDoors(dir)],
+				this._cDoor(	dir, (contact,input)=>{this._doorContacts[dir].push(contact);this._doorInputs[dir].push(input);}),
 			);
 		}
-		//---
-		el = div(	"div","block-row",
-			(l	?createContact()	:null),
-			(l	?createInput("left")	:null),
-			(r	?createInput("right")	:null),
-			(r	?createContact()	:null),
-		);
-		return el;
+		else {
+			let door = this._cDoor(	dir, (contact,input)=>{	this._doorContacts	[dir]	.push(contact)	;
+						this._doorInputs	[dir]	.push(input)	;	});
+			
+			this._cRow(	(row)=>{this._addRowEl(row);this._doorRows.push(row);},
+				dir=="in"?door:null,
+				dir=="out"?door:null,
+			);
+		}
 	}
-	
-	
-	block = div("div","block", createRow(true,false));
-	
-	for(var i=0; i<Math.max(leftSide.length,rightSide.length); i++) {
-		block.appendChild(createRow(i<leftSide.length, i<rightSide.length));
+	getDoorText(dir, id) {
+		this._doorInputs[dir][id].innerText;
 	}
-	
-	return block;
+	setDoorText(dir, id, text) {
+		this._doorInputs[dir][id].innerText = text;
+	}
+	getNumDoors(dir) {
+		return this._doorInputs[dir].length;
+	}
 }

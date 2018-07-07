@@ -1,0 +1,6 @@
+name "d-interpreter"
+description "C~ interpreter"
+authors "Jonathan"
+copyright "Copyright © 2018, Jonathan"
+license "proprietary"
+dependency "cst" version="~>1.0"

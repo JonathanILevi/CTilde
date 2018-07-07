@@ -1,0 +1,129 @@
+(func getToken
+	
+)
+
+(call a func=)
+
+
+(class Tokenizer
+	
+)
+
+[
+	{	type	=func
+		id	=main
+		blocks	=[{	type	=value
+				id	=main-rawData (type String) (value \(hi\ \(how\ are\)you\)))
+		(var main-tokenizer (arg type Tokenizer))
+		(foreach )
+	}
+]
+
+
+{
+	"type":"main",
+
+}
+
+
+
+
+{}
+
+
+
+{
+	"blocks":[
+		{
+			"id":"import",
+			"type":"Import",
+			"ins":[
+			]
+			"outs":[
+				{
+					"name":"Std.write",
+					"connections":[
+						{
+							"connectionBlock":"write",
+							"connectionContact":"func",
+						}
+					]
+				},
+			]
+		}
+		{
+			"id":"run",
+			"type":"Run",
+			"ins":[
+			]
+			"outs":[
+				{
+					"name":"run",
+					"connections":[
+						{
+							"connectionBlock":"write",
+							"connectionContact":"run",
+						}
+					]
+				}	
+			]
+		}
+		{
+			"id":"write",
+			"type":"Call",
+			"ins":[
+				{
+					"name":"run",
+					"connections":[
+						{
+							"connectionBlock":"run",
+							"connectionContact":"run",
+						}
+					]
+				},
+				{
+					"name":"func",
+					"connections":[
+						{
+							"connectionBlock":"import",
+							"connectionContact":"Std.write",
+						}
+					]
+				},
+				{
+					"name":"value",
+					"connections":[
+						{
+							"connectionBlock":"string",
+							"connectionContact":"Hello World!",
+						}
+					]
+				},
+			]
+			"outs":[
+			]
+		}
+		{
+			"id":"string",
+			"type":"Value",
+			"ins":[
+				{
+					"name":"String",
+					"connections":[
+					]
+				},
+			]
+			"outs":[
+				{
+					"name":"Hello World!",
+					"connections":[
+						{
+							"connectionBlock":"write",
+							"connectionContact":"value",
+						}
+					]
+				}
+			]
+		}
+	]
+}
