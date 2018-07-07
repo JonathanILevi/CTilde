@@ -8,8 +8,8 @@ class Blocks {
 		this.blocks = [];
 		this.selectedBlocks = [];
 	}
-	addBlock() {
-		let newBlock = new Block(this);
+	addBlock(saveData) {
+		let newBlock = new Block(this,saveData);
 		this.blocks.push(newBlock);
 		this.codeEl.appendChild(newBlock.el);
 	}
@@ -30,14 +30,32 @@ class Blocks {
 		}
 		this.selectedBlocks = [];
 	}
+	
+	getSaveData() {
+		var saveData = [];
+		for (var block of this.blocks) {
+			saveData.push(block.getSaveData());
+		}
+		return saveData;
+	}
+	loadSaveData(saveData) {
+		for (var blockData of JSON.parse(saveData)) {
+			this.addBlock(blockData);
+		}
+	}
 }
 
 
 class Block {
-	constructor(blocks) {
+	constructor(blocks, saveData=null) {
 		this.blocks = blocks;
 		
-		this.domBlock = new DomBlock();
+		if (saveData==null) {
+			this.domBlock = new DomBlock();
+		}
+		else {
+			this.domBlock = domBlockLoadData(saveData);
+		}
 		this.el=this.domBlock.getEl();
 		this.addMouseListeners();
 		
@@ -56,6 +74,10 @@ class Block {
 				}
 			}
 		});
+	}
+	
+	getSaveData() {
+		return domBlockSaveData(this.domBlock);
 	}
 	
 	onSelect() {
@@ -108,6 +130,37 @@ class Block {
 			}
 		});
 	}
+}
+
+
+function domBlockSaveData(block) {
+	var data = {};
+	data	.header	= {text: block.getHeaderText()};
+	data	.ins	= [];
+	for (var i=0; i<block.getNumDoors("in"); i++) {
+		data.ins.push({text: block.getDoorText("in",i)});
+	}
+	data	.outs	= [];
+	for (var i=0; i<block.getNumDoors("out"); i++) {
+		data.outs.push({text: block.getDoorText("out",i)});
+	}
+	
+	data	.pos	= block.getPos();
+	return data;
+}
+function domBlockLoadData(data) {
+	var block = new DomBlock();
+	block.setHeaderText(data.header.text);
+	for (var i=0; i<data.ins.length; i++) {
+		block.addDoor("in");
+		block.setDoorText("in", i, data.ins[i].text);
+	}
+	for (var i=0; i<data.outs.length; i++) {
+		block.addDoor("out");
+		block.setDoorText("out", i, data.outs[i].text);
+	}
+	block.setPos(data.pos);
+	return block;
 }
 
 
@@ -181,13 +234,13 @@ class DomBlock {
 	}
 	
 	getHeaderText() {
-		this._headerContact.innerText;
+		return this._headerInput.innerText;
 	}
 	setHeaderText(text) {
-		this._headerContact.innerText=text;
+		this._headerInput.innerText=text;
 	}
 	
-	addDoor(dir, text) {
+	addDoor(dir) {
 		if (this.getNumDoors(dir)<this._doorRows.length) {
 			this._addDoorToRow(	dir,
 				this._doorRows[this.getNumDoors(dir)],
@@ -205,7 +258,7 @@ class DomBlock {
 		}
 	}
 	getDoorText(dir, id) {
-		this._doorInputs[dir][id].innerText;
+		return this._doorInputs[dir][id].innerText;
 	}
 	setDoorText(dir, id, text) {
 		this._doorInputs[dir][id].innerText = text;
