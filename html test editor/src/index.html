@@ -7,6 +7,9 @@
 </head>
 <body>
 	<button onclick="blocks.addBlock()">Add Block</button>
+	<button onclick="document.getElementById('saveData').innerText=JSON.stringify(blocks.getSaveData())">Save</button>
+	<button onclick="blocks.loadSaveData(document.getElementById('saveData').innerText)">Load</button>
+	<div id="saveData" contenteditable="true"></div>
 	<!--<button onclick="onLineToggle()">Toggle Line</button>
 	<button onclick="onAddBlock()">Add Block</button>
 	<button onclick="onAddRow('both')">Add Row (both)</button>
