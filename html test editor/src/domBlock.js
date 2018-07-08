@@ -2,7 +2,8 @@
 
 
 class DomBlock {
-	constructor() {
+	constructor(id) {
+		this.id = id;
 		this._el	;
 		this._header	;
 		this._headerContact	;
@@ -140,6 +141,10 @@ class DomBlock {
 		}
 	}
 	
+	
+	getDoorConnections(dir,id) {
+		return this._doorConnections[dir][id];
+	}
 	
 	
 	

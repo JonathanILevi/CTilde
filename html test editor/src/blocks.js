@@ -11,7 +11,7 @@ class Workspace {
 		this.selectedContact = null;
 	}
 	addBlock(saveData) {
-		let newBlock = new Block(this,saveData);
+		let newBlock = new Block(this.blocks.length+"", this,saveData);
 		this.blocks.push(newBlock);
 		this.workspaceEl.appendChild(newBlock.el);
 	}
@@ -75,10 +75,11 @@ class Workspace {
 
 
 class Block {
-	constructor(workspace, saveData=null) {
+	constructor(id, workspace, saveData=null) {
+		this.id = id;
 		this.workspace = workspace;
 		
-		this.domBlock = new DomBlock();
+		this.domBlock = new DomBlock(id);
 		if (saveData!=null) {
 			this.domBlock.setSaveData(saveData);
 		}
