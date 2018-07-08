@@ -203,35 +203,6 @@ class DomBlock {
 	}
 	
 	
-	
-	getSaveData() {
-		var data = {};
-		data	.header	= {text: this.getHeaderText()};
-		data	.ins	= [];
-		for (var i=0; i<this.getNumDoors("in"); i++) {
-			data.ins.push({text: this.getDoorText("in",i)});
-		}
-		data	.outs	= [];
-		for (var i=0; i<this.getNumDoors("out"); i++) {
-			data.outs.push({text: this.getDoorText("out",i)});
-		}
-	
-		data	.pos	= this.getPos();
-		return data;
-	}
-	setSaveData(data) {
-		this.setHeaderText(data.header.text);
-		for (var i=0; i<data.ins.length; i++) {
-			this.addDoor("in");
-			this.setDoorText("in", i, data.ins[i].text);
-		}
-		for (var i=0; i<data.outs.length; i++) {
-			this.addDoor("out");
-			this.setDoorText("out", i, data.outs[i].text);
-		}
-		this.setPos(data.pos);
-		return this;
-	}
 }
 
 

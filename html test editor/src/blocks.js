@@ -81,7 +81,7 @@ class Block {
 		
 		this.domBlock = new DomBlock(id);
 		if (saveData!=null) {
-			this.domBlock.setSaveData(saveData);
+			this.loadSaveData(saveData);
 		}
 		this.el=this.domBlock.getEl();
 		this.addMouseListeners();
@@ -101,10 +101,6 @@ class Block {
 				}
 			}
 		});
-	}
-	
-	getSaveData() {
-		return this.domBlock.getSaveData();
 	}
 	
 	onSelect() {
@@ -171,6 +167,43 @@ class Block {
 		this.domBlock.addContactListener("click",(dir,contactId,e)=>{
 			this.workspace.selectContact(this,dir,contactId);
 		});
+	}
+	
+	getSaveData() {
+		var data = {};
+		data	.id	= this.id;
+		data	.header	= {text: this.domBlock.getHeaderText()};
+		var doors = {in:[],out:[]};
+		{
+			for (var dir of ["in","out"]) {
+				for (var i=0; i<this.domBlock.getNumDoors(dir); i++) {
+					doors[dir].push(	{	text: this.domBlock.getDoorText(dir,i), 
+							connections:[],
+						}
+					);
+					for (var connection of this.domBlock.getDoorConnections(dir,i)) {
+						doors[dir][i].connections.push({block:connection.block.id, contact:connection.block.getDoorText(dir=="in"?"out":"in", connection.contactId)});
+					}
+				}
+			}
+		}
+		data	.ins	= doors.in;
+		data	.outs	= doors.out;
+		data	.pos	= this.domBlock.getPos();
+		return data;
+	}
+	loadSaveData(data) {
+		this.domBlock.setHeaderText(data.header.text);
+		for (var i=0; i<data.ins.length; i++) {
+			this.domBlock.addDoor("in");
+			this.domBlock.setDoorText("in", i, data.ins[i].text);
+		}
+		for (var i=0; i<data.outs.length; i++) {
+			this.domBlock.addDoor("out");
+			this.domBlock.setDoorText("out", i, data.outs[i].text);
+		}
+		this.domBlock.setPos(data.pos);
+		return this.domBlock;
 	}
 }
 
