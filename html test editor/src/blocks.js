@@ -5,14 +5,21 @@
 class Workspace {
 	constructor(workspaceEl) {
 		this.workspaceEl = workspaceEl;
-		this.blocks = [];
+		this.blocks	= [];
+		this.lines	= [];
 		this.selectedBlocks = [];
+		this.selectedContact = null;
 	}
 	addBlock(saveData) {
 		let newBlock = new Block(this,saveData);
 		this.blocks.push(newBlock);
 		this.workspaceEl.appendChild(newBlock.el);
 	}
+	addLine(line) {
+		this.lines.push(line);
+		this.workspaceEl.appendChild(line.getEl());
+	}
+	
 	selectBlock(block, add=false) {
 		this.unselectAllBlocks();
 		block.onSelect();
@@ -30,6 +37,24 @@ class Workspace {
 		}
 		this.selectedBlocks = [];
 	}
+	
+	selectContact(block, dir, contactId) {
+		if (this.selectedContact==null) {
+			block.onContactSelected(dir, contactId,this.selectedContact);
+			this.selectedContact = {block:block, dir:dir, contactId:contactId};
+		}
+		else {
+			block.onConnection(dir, contactId,this.selectedContact);
+			this.unselectContact();
+		}
+	}
+	unselectContact() {
+		if (this.selectedContact!=null) {
+			this.selectedContact.block.onContactUnselected(this.selectedContact.dir, this.selectedContact.contactId);
+			this.selectedContact = null;
+		}
+	}
+	
 	
 	getSaveData() {
 		var saveData = [];
@@ -87,6 +112,17 @@ class Block {
 	onUnselect() {
 		this.domBlock.setSelected(false);
 	}
+	onContactSelected(dir, contactId, otherSelected) {
+		this.domBlock.selectDoor(dir, contactId);
+	}
+	onContactUnselected(dir, contactId) {
+		this.domBlock.unselectDoor();
+	}
+	onConnection(dir,contactId, otherSelected) {
+		if (otherSelected.dir!=dir) {
+			this.workspace.addLine(this.domBlock.addDoorConnection(dir,contactId,otherSelected.block.domBlock,otherSelected.contactId));
+		}
+	}
 	
 	addMouseListeners() {
 		var pointerDown	= false;
@@ -131,8 +167,8 @@ class Block {
 			}
 		});
 		
-		this.domBlock.addContactListener("click",(e)=>{
-			this.workspace.selectContact(e);
+		this.domBlock.addContactListener("click",(dir,contactId,e)=>{
+			this.workspace.selectContact(this,dir,contactId);
 		});
 	}
 }

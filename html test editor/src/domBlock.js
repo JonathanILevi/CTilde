@@ -10,6 +10,8 @@ class DomBlock {
 		this._doorRows	=[];
 		this._doorContacts	={in:[],out:[]};
 		this._doorInputs	={in:[],out:[]};
+		this._doorConnections	={in:[],out:[]};
+		this._selectedDoor	={dir:null,id:null};
 		
 		this._pos	= [0,0];
 		this._selected	= false;
@@ -68,6 +70,8 @@ class DomBlock {
 		return rowEl;
 	}
 	
+	
+	
 	getEl() {
 		return this._el;
 	}
@@ -88,13 +92,14 @@ class DomBlock {
 		}
 		else {
 			let door = this._cDoor(	dir, (contact,input)=>{	this._doorContacts	[dir]	.push(contact)	;
-						this._doorInputs	[dir]	.push(input)	;	});
+					this._doorInputs	[dir]	.push(input)	;	});
 			
 			this._cRow(	(row)=>{this._addRowEl(row);this._doorRows.push(row);},
 				dir=="in"?door:null,
 				dir=="out"?door:null,
 			);
 		}
+		this._doorConnections[dir].push([]);
 	}
 	getDoorText(dir, id) {
 		return this._doorInputs[dir][id].innerText;
@@ -103,11 +108,38 @@ class DomBlock {
 		this._doorInputs[dir][id].innerText = text;
 	}
 	getDoorContact(dir, id) {
-		return this._doorContacts[dir][id].innerText;
+		return this._doorContacts[dir][id];
 	}
 	getNumDoors(dir) {
 		return this._doorInputs[dir].length;
 	}
+	
+	selectDoor(dir,id) {
+		this._selectedDoor = {dir:dir, id:id};
+		this.getDoorContact(dir,id).classList.add("-selected");
+	}
+	unselectDoor() {
+		this.getDoorContact(this._selectedDoor.dir,this._selectedDoor.id).classList.remove("-selected");
+		this._selectedDoor = {dir:null, id:null};
+	}
+	
+	addDoorConnection(dir,contactId,toBlock,toContactId) {
+		var line = new DomLine();
+		this	._addDoorConnection(dir	,contactId	,toBlock	,toContactId	,line);
+		toBlock	._addDoorConnection(dir=="out"?"in":"out"	,toContactId	,this	,contactId	,line);
+		line.updateRender();
+		return line;
+	}
+	_addDoorConnection(dir,contactId,toBlock,toContactId, line) {
+		this._doorConnections[dir][contactId].push({block:toBlock,contactId:toContactId,line:line});
+		if (dir=="out") {
+			line.setFrom(this,contactId, false);
+		}
+		else {
+			line.setTo(this,contactId, false);
+		}
+	}
+	
 	
 	
 	
@@ -118,6 +150,13 @@ class DomBlock {
 		this._pos = pos;
 		this._el.style.left	= pos[0]+"px";
 		this._el.style.top	= pos[1]+"px";
+		for (var dir of ["in","out"]) {
+			for (var i=0; i<this.getNumDoors(dir); i++) {
+				for (var connection of this._doorConnections[dir][i]) {
+					connection.line.updateRender();
+				}
+			}
+		}
 	}
 	
 	getSelected() {
@@ -187,5 +226,67 @@ class DomBlock {
 		}
 		this.setPos(data.pos);
 		return this;
+	}
+}
+
+
+
+class DomLine {
+	constructor() {
+		this._el	;
+		this._from	= {block:null,contactId:null};
+		this._to	= {block:null,contactId:null};
+		
+		this._el = div("div", "line");
+	}
+	
+	
+	getEl() {
+		return this._el;
+	}
+	
+	getFrom() {
+		return this._from;
+	}
+	getTo() {
+		return this._to;
+	}
+	
+	setFrom(block, contactId, updateRender=true) {
+		this._from = {block:block, contactId:contactId};
+		if (updateRender) {
+			this.updateRender();
+		}
+	}
+	setTo(block, contactId, updateRender=true) {
+		this._to = {block:block, contactId:contactId};
+		if (updateRender) {
+			this.updateRender();
+		}
+	}
+	
+	
+	
+	updateRender() {
+		var br1 = this._from.block.getDoorContact("out",this._from.contactId).getBoundingClientRect();
+		var br2 = this._to.block.getDoorContact("in",this._to.contactId).getBoundingClientRect();
+		this._moveLine(	br1.left	+ br1.width/2	,
+			br1.top	+ br1.height/2	,
+			br2.left	+ br2.width/2	,
+			br2.top	+ br2.height/2	);
+	}
+	
+	_moveLine(x1,y1,x2,y2) {
+		var r	= Math.sqrt(	((x1-x2)*(x1-x2))	+	((y1-y2)*(y1-y2))	);
+	
+		var midX = (x1+x2)/2;
+		var midY = (y1+y2)/2;
+	
+		var slope	= (Math.atan2(y1-y2,x1-x2))	*180/Math.PI;
+	
+		this._el.style.width	= r	;
+		this._el.style.left	= midX - r/2	;
+		this._el.style.top	= midY	;
+		this._el.style.transform	= "rotate("+slope+"deg)"	;
 	}
 }
