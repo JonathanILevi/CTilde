@@ -2,16 +2,16 @@
 
 
 
-class Blocks {
-	constructor(codeEl) {
-		this.codeEl = codeEl;
+class Workspace {
+	constructor(workspaceEl) {
+		this.workspaceEl = workspaceEl;
 		this.blocks = [];
 		this.selectedBlocks = [];
 	}
 	addBlock(saveData) {
 		let newBlock = new Block(this,saveData);
 		this.blocks.push(newBlock);
-		this.codeEl.appendChild(newBlock.el);
+		this.workspaceEl.appendChild(newBlock.el);
 	}
 	selectBlock(block, add=false) {
 		this.unselectAllBlocks();
@@ -50,8 +50,8 @@ class Blocks {
 
 
 class Block {
-	constructor(blocks, saveData=null) {
-		this.blocks = blocks;
+	constructor(workspace, saveData=null) {
+		this.workspace = workspace;
 		
 		this.domBlock = new DomBlock();
 		if (saveData!=null) {
@@ -107,7 +107,7 @@ class Block {
 		this.domBlock.addBlockListener("pointerup", (e)=>{
 			if (pointerDown && !moving) {
 				if (!this.domBlock.getSelected()) {
-					this.blocks.selectBlock(this);
+					this.workspace.selectBlock(this);
 				}
 			}
 			if (pointerDown) {
@@ -132,7 +132,7 @@ class Block {
 		});
 		
 		this.domBlock.addContactListener("click",(e)=>{
-			this.blocks.selectContact(e);
+			this.workspace.selectContact(e);
 		});
 	}
 }

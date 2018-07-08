@@ -1,6 +1,6 @@
 
 
 
-var blocks = new Blocks(document.getElementById("code"));
+var workspace = new Workspace(document.getElementById("code"));
 
 
