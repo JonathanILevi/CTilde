@@ -253,6 +253,9 @@ class DomBlock {
 				}
 			}
 		}
+		for (var connection of this._headerConnections) {
+			connection.updateRender();
+		}
 	}
 	
 	getSelected() {
