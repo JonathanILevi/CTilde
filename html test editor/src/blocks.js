@@ -5,15 +5,17 @@
 class Workspace {
 	constructor(workspaceEl) {
 		this.workspaceEl = workspaceEl;
-		this.blocks	= [];
+		this.blocks	= {};
+		this.nextBlockId	= 0;
 		this.lines	= [];
 		this.selectedBlocks = [];
 		this.selectedContact = null;
 	}
 	addBlock(saveData) {
-		let newBlock = new Block(this.blocks.length+"", this,saveData);
-		this.blocks.push(newBlock);
+		let newBlock = new Block(this.nextBlockId+"", this,saveData);
+		this.blocks[this.nextBlockId+""] = newBlock;
 		this.workspaceEl.appendChild(newBlock.el);
+		this.nextBlockId++;
 	}
 	addLine(line) {
 		this.lines.push(line);
