@@ -287,8 +287,8 @@ class Block {
 							connections:[],
 						}
 					);
-					for (var connection of this.domBlock.getDoorConnections(dir,i)) {
-						doors[dir][i].connections.push({block:connection.block.id, contact:connection.block.getDoorText(dir=="in"?"out":"in", connection.contactId)});
+					for (var line of this.domBlock.getDoorConnections(dir,i)) {
+						doors[dir][i].connections.push({block:line.getConnectedTo(dir).block.id, contact:line.getConnectedTo(dir).contactId});
 					}
 				}
 			}
@@ -322,7 +322,7 @@ class Block {
 				for (var i=0; i<doors[dir].length; i++) {
 					for (var connection of doors[dir][i].connections) {
 						let otherBlock = workspace.getBlockBySaveId(connection.block);
-						this.addConnection(dir,i, otherBlock, otherBlock.domBlock.getDoorByText(dir=="in"?"out":"in", connection.contact))
+						this.addConnection(dir,i, otherBlock, connection.contact)
 					}
 				}
 			}

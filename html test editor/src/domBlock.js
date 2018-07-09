@@ -8,6 +8,7 @@ class DomBlock {
 		this._header	;
 		this._headerContact	;
 		this._headerInput	;
+		this._headerConnections	=[];
 		this._doorRows	=[];
 		this._doorContacts	={in:[],out:[]};
 		this._doorInputs	={in:[],out:[]};
@@ -154,12 +155,21 @@ class DomBlock {
 		}
 	}
 	getDoorText(dir, id) {
+		if (dir=="in"&&id==-1) {
+			return this.getHeaderText();
+		}
 		return this._doorInputs[dir][id].innerText;
 	}
 	setDoorText(dir, id, text) {
+		if (dir=="in"&&id==-1) {
+			return this.setHeaderText(text);
+		}
 		this._doorInputs[dir][id].innerText = text;
 	}
 	getDoorContact(dir, id) {
+		if (dir=="in"&&id==-1) {
+			return this._headerContact;
+		}
 		return this._doorContacts[dir][id];
 	}
 	getNumDoors(dir) {
@@ -190,25 +200,38 @@ class DomBlock {
 		line.updateRender();
 		return line;
 	}
-	_addDoorConnection(dir,contactId,toBlock,toContactId, line) {
-		this._doorConnections[dir][contactId].push(line);
-		if (dir=="out") {
-			line.setFrom(this,contactId, false);
+	_addDoorConnection(dir,id,toBlock,toContactId, line) {
+		if (dir=="in"&&id==-1) {
+			this._headerConnections.push(line);
 		}
 		else {
-			line.setTo(this,contactId, false);
+			this._doorConnections[dir][id].push(line);
+		}
+		if (dir=="out") {
+			line.setFrom(this,id, false);
+		}
+		else {
+			line.setTo(this,id, false);
 		}
 	}
 	
 	
 	getDoorConnections(dir,id) {
+		if (dir=="in"&&id==-1) {
+			return this._headerConnections;
+		}
 		return this._doorConnections[dir][id];
 	}
 	
-	_removeDoorConnection(dir, contactId, line) {
-		for (var i=this._doorConnections.length-1; i>=0; i++) {
+	_removeDoorConnection(dir, id, line) {
+		for (var i=this.getDoorConnections(dir,id).length-1; i>=0; i++) {
 			if (connection.line==line) {
-				this._doorConnections.splice(i,1);
+				if (dir=="in"&&id==-1) {
+					this._headerConnections.splice(i,1);
+				}
+				else {
+					this._doorConnections.splice(i,1);
+				}
 				break;
 			}
 		}
@@ -268,6 +291,7 @@ class DomBlock {
 				contact.addEventListener(event,modCallback);
 			}
 		}
+		this._headerContact.addEventListener(event,(e)=>{callback("in",-1,e)});
 	}
 	
 	
@@ -306,6 +330,16 @@ class DomLine {
 		this._to = {block:block, contactId:contactId};
 		if (updateRender) {
 			this.updateRender();
+		}
+	}
+	
+	
+	getConnectedTo(dir) {
+		if (dir=="out") {
+			return this.getTo();
+		}
+		else {
+			return this.getFrom();
 		}
 	}
 	
