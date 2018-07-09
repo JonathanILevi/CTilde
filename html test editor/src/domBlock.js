@@ -154,6 +154,15 @@ class DomBlock {
 		return this._doorConnections[dir][id];
 	}
 	
+	_removeDoorConnection(dir, contactId, line) {
+		for (var i=this._doorConnections.length-1; i>=0; i++) {
+			if (connection.line==line) {
+				this._doorConnections.splice(i,1);
+				break;
+			}
+		}
+	}
+	
 	
 	
 	getPos() {
@@ -272,5 +281,10 @@ class DomLine {
 		this._el.style.left	= midX - r/2	;
 		this._el.style.top	= midY	;
 		this._el.style.transform	= "rotate("+slope+"deg)"	;
+	}
+	
+	remove() {
+		this._from.block._removeDoorConnection("out",this._from.contactId,this);
+		this._to.block._removeDoorConnection("in",this._to.contactId,this);
 	}
 }

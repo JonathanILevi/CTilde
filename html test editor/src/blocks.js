@@ -11,6 +11,29 @@ class Workspace {
 		this.lines	= [];
 		this.selectedBlocks = [];
 		this.selectedContact = null;
+		
+		
+		document.addEventListener("keydown",(e)=>{
+			if (e.key=="Escape") {
+				this.unselectAllBlocks();
+				this.unselectContact();
+			}
+			else if (e.key=="Delete") {
+				if (this.selectedContact!=null) {
+					
+				}
+				else {
+					for (var block of this.selectedBlocks) {
+						this.removeBlock(block, false);
+					}
+					this.selectedBlocks = [];
+				}
+			}
+			else {
+				console.log(e.key);
+			}
+		});
+		
 	}
 	addBlock(id=null) {
 		if (id==null) {
@@ -26,7 +49,22 @@ class Workspace {
 	}
 	addLine(line) {
 		this.lines.push(line);
-		this.el.appendChild(line.getEl());
+		this.el.appendChild(line.el);
+	}
+	removeBlock(block, unselect=true) {
+		block.onRemove();
+		this.el.removeChild(block.el);
+		////remove block;
+		delete this.blocks[block.id];
+		if (unselect) {
+			throw "not implemented";
+		}
+	}
+	removeLine(line) {
+		if (this.lines.indexOf(line) != -1) {
+			this.el.removeChild(line.el);
+			this.lines.splice(this.lines.indexOf(line),1);
+		}
 	}
 	
 	selectBlock(block, add=false) {
@@ -34,9 +72,9 @@ class Workspace {
 		block.onSelect();
 		this.selectedBlocks.push(block);
 	}
-	unselectBlock(block, remove=true) {
+	unselectBlock(block, removeFromSelectedList=true) {
 		block.onUnselect();
-		if (remove) {
+		if (removeFromSelectedList) {
 			throw "not implemented";
 		}
 	}
@@ -118,6 +156,8 @@ class Block {
 		this.el=this.domBlock.getEl();
 		this.addMouseListeners();
 		
+		this.lines = [];
+		
 		
 		document.addEventListener("keydown",(e)=>{
 			if (this.domBlock.getSelected() && e.ctrlKey) {
@@ -152,10 +192,26 @@ class Block {
 			this.addConnection(dir, contactId, otherSelected.block, otherSelected.contactId);
 		}
 	}
+	onRemove() {
+		for (var i=this.lines.length-1; i>=0; i--) {
+			this.lines[i].remove();
+		}
+	}
+	onRemoveLine(line) {
+		this.lines.splice(this.lines.indexOf(line),1);
+		this.workspace.removeLine(line);
+	}
 	
-	
+	addLine(line) {
+		this.lines.push(line);
+	}
 	addConnection(dir,contactId, otherBlock, otherContactId) {
-		this.workspace.addLine(this.domBlock.addDoorConnection(dir, contactId, otherBlock.domBlock, otherContactId));
+		var domLine = this.domBlock.addDoorConnection(dir, contactId, otherBlock.domBlock, otherContactId);
+		
+		var line = new Line(this, domLine);
+		this	.addLine(line);
+		otherBlock	.addLine(line);
+		this.workspace	.addLine(line);
 	}
 	
 	addMouseListeners() {
@@ -262,3 +318,15 @@ class Block {
 }
 
 
+class Line {
+	constructor(block, domLine) {
+		this.block	= block;
+		this.domLine	= domLine;
+		this.el = domLine.getEl();
+	}
+	
+	remove() {
+		this.domLine.remove();
+		this.block.onRemoveLine(this);
+	}
+}
