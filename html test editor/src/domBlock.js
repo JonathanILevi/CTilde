@@ -35,14 +35,38 @@ class DomBlock {
 	_addRowEl(row) {
 		this._el.appendChild(row);
 	}
+	_removeRowEl(row) {
+		this._el.removeChild(row);
+	}
 	_addDoorToRow(dir,rowEl,door){
 		if (dir=="in") {
-			rowEl.insertBefore(door.input	, rowEl.childNodes[0]);
-			rowEl.insertBefore(door.contact	, rowEl.childNodes[0]);
+			rowEl.insertBefore(door.input	, rowEl.firstChild);
+			rowEl.insertBefore(door.contact	, rowEl.firstChild);
 		}
 		else {
 			rowEl.appendChild(door.input);
 			rowEl.appendChild(door.contact);
+		}
+	}
+	_removeDoorFromRow(dir,rowEl){
+		if (dir=="in") {
+			rowEl.removeChild(rowEl.firstChild);
+			rowEl.removeChild(rowEl.firstChild);
+		}
+		else {
+			rowEl.removeChild(rowEl.lastChild);
+			rowEl.removeChild(rowEl.lastChild);
+		}
+	}
+	_addDoorToRowId(dir, rowId, door) {
+		if (rowId<this._doorRows.length) {
+			this._addDoorToRow(dir, this._doorRows[rowId], door);
+		}
+		else {
+			this._cRow(	(row)=>{this._addRowEl(row);this._doorRows.push(row);},
+				dir=="in"?door:null,
+				dir=="out"?door:null,
+			);
 		}
 	}
 	_cDoor(dir,callback) {
@@ -85,22 +109,49 @@ class DomBlock {
 	}
 	
 	addDoor(dir) {
-		if (this.getNumDoors(dir)<this._doorRows.length) {
-			this._addDoorToRow(	dir,
-				this._doorRows[this.getNumDoors(dir)],
-				this._cDoor(	dir, (contact,input)=>{this._doorContacts[dir].push(contact);this._doorInputs[dir].push(input);}),
-			);
+		let doorId = this.getNumDoors(dir);
+		
+		let door = this._cDoor(	dir, (contact,input)=>{	this._doorContacts	[dir]	.push(contact)	;
+				this._doorInputs	[dir]	.push(input)	;	});
+		this._doorConnections[dir].push([]);
+		
+		this._addDoorToRowId(dir, doorId, door);
+	}
+	removeDoor(dir, id) {
+		if (id < this.getNumDoors(dir=="out"?"in":"out")) {
+			for (var i=id; i<this.getNumDoors(dir); i++) {
+				if (i==this.getNumDoors(dir)-1 && i>=this.getNumDoors(dir=="out"?"in":"out")) {
+					this._removeRowEl(this._doorRows[i]);
+					this._doorRows.splice(i,1);
+				}
+				else {
+					this._removeDoorFromRow(	dir,
+						this._doorRows[i],
+					);
+				}
+				if (i>id) {
+					this._addDoorToRow(dir, this._doorRows[i-1], {input:this._doorInputs[dir][i], contact:this._doorContacts[dir][i]})
+				}
+			}
 		}
 		else {
-			let door = this._cDoor(	dir, (contact,input)=>{	this._doorContacts	[dir]	.push(contact)	;
-					this._doorInputs	[dir]	.push(input)	;	});
-			
-			this._cRow(	(row)=>{this._addRowEl(row);this._doorRows.push(row);},
-				dir=="in"?door:null,
-				dir=="out"?door:null,
-			);
+			this._removeRowEl(this._doorRows[id]);
+			this._doorRows.splice(id,1);
 		}
-		this._doorConnections[dir].push([]);
+		this._doorInputs	[dir].splice(id,1);
+		this._doorContacts	[dir].splice(id,1);
+		this._doorConnections	[dir].splice(id,1);
+		
+		for (var i=id; i<this.getNumDoors(dir); i++) {
+			for (var connection of this._doorConnections[dir][i]) {
+				if (dir=="in") {
+					connection.setTo(this, i, true);
+				}
+				if (dir=="out") {
+					connection.setFrom(this, i, true);
+				}
+			}
+		}
 	}
 	getDoorText(dir, id) {
 		return this._doorInputs[dir][id].innerText;
@@ -140,7 +191,7 @@ class DomBlock {
 		return line;
 	}
 	_addDoorConnection(dir,contactId,toBlock,toContactId, line) {
-		this._doorConnections[dir][contactId].push({block:toBlock,contactId:toContactId,line:line});
+		this._doorConnections[dir][contactId].push(line);
 		if (dir=="out") {
 			line.setFrom(this,contactId, false);
 		}
@@ -175,7 +226,7 @@ class DomBlock {
 		for (var dir of ["in","out"]) {
 			for (var i=0; i<this.getNumDoors(dir); i++) {
 				for (var connection of this._doorConnections[dir][i]) {
-					connection.line.updateRender();
+					connection.updateRender();
 				}
 			}
 		}

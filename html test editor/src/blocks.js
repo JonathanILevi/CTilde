@@ -19,14 +19,14 @@ class Workspace {
 				this.unselectContact();
 			}
 			else if (e.key=="Delete") {
-				if (this.selectedContact!=null) {
-					
-				}
-				else {
+				if (this.selectedContact==null) {
 					for (var block of this.selectedBlocks) {
 						this.removeBlock(block, false);
 					}
 					this.selectedBlocks = [];
+				}
+				else if (this.selectedBlocks.indexOf(this.selectedContact.block) != -1){
+					this.selectedContact.block.removeDoor(this.selectedContact.dir, this.selectedContact.contactId);
 				}
 			}
 			else {
@@ -200,6 +200,19 @@ class Block {
 	onRemoveLine(line) {
 		this.lines.splice(this.lines.indexOf(line),1);
 		this.workspace.removeLine(line);
+	}
+	
+	removeDoor(dir, contactId) {
+		for (var i=this.lines.length-1; i>=0; i--) {
+			var contact = (	dir=="out"
+				? this.lines[i].domLine.getFrom()
+				: this.lines[i].domLine.getTo()	);
+			if (contact.block==this.domBlock && contact.contactId==contactId) {
+				this.lines[i].remove();
+			}
+		}
+		this.workspace.unselectContact();
+		this.domBlock.removeDoor(dir,contactId);
 	}
 	
 	addLine(line) {
