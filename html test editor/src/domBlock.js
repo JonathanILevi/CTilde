@@ -114,6 +114,14 @@ class DomBlock {
 	getNumDoors(dir) {
 		return this._doorInputs[dir].length;
 	}
+	getDoorByText(dir, text) {
+		for (var i=0; i<this.getNumDoors(dir); i++) {
+			if (this.getDoorText(dir,i)==text) {
+				return i;
+			}
+		}
+		return null;
+	}
 	
 	selectDoor(dir,id) {
 		this._selectedDoor = {dir:dir, id:id};
