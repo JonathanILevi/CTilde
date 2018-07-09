@@ -1,6 +1,7 @@
 
 
 
-var workspace = new Workspace(document.getElementById("code"));
+var workspace = new Workspace();
+document.body.appendChild(workspace.el);
 
 

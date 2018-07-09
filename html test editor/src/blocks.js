@@ -3,8 +3,8 @@
 
 
 class Workspace {
-	constructor(workspaceEl) {
-		this.workspaceEl = workspaceEl;
+	constructor() {
+		this.el = div("div","workspace");
 		this.blocks	= {};
 		this.nextBlockId	= 0;
 		this.lines	= [];
@@ -14,12 +14,12 @@ class Workspace {
 	addBlock(saveData) {
 		let newBlock = new Block(this.nextBlockId+"", this,saveData);
 		this.blocks[this.nextBlockId+""] = newBlock;
-		this.workspaceEl.appendChild(newBlock.el);
+		this.el.appendChild(newBlock.el);
 		this.nextBlockId++;
 	}
 	addLine(line) {
 		this.lines.push(line);
-		this.workspaceEl.appendChild(line.getEl());
+		this.el.appendChild(line.getEl());
 	}
 	
 	selectBlock(block, add=false) {
