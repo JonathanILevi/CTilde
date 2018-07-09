@@ -221,10 +221,13 @@ class Block {
 	addConnection(dir,contactId, otherBlock, otherContactId) {
 		var domLine = this.domBlock.addDoorConnection(dir, contactId, otherBlock.domBlock, otherContactId);
 		
-		var line = new Line(this, domLine);
-		this	.addLine(line);
-		otherBlock	.addLine(line);
-		this.workspace	.addLine(line);
+		if (domLine != null) {
+			var line = new Line(this, domLine);
+			
+			this	.addLine(line);
+			otherBlock	.addLine(line);
+			this.workspace	.addLine(line);
+		}
 	}
 	
 	addMouseListeners() {

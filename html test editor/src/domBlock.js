@@ -194,6 +194,17 @@ class DomBlock {
 	}
 	
 	addDoorConnection(dir,contactId,toBlock,toContactId) {
+		//---Check if duplicate
+		{
+			let line;
+			for (line of this.getDoorConnections(dir, contactId)) {
+				let connectedTo = line.getConnectedTo(dir);
+				if (connectedTo.block==toBlock && connectedTo.contactId==toContactId) {
+					return null;
+				}
+			}
+		}
+		//---
 		var line = new DomLine();
 		this	._addDoorConnection(dir	,contactId	,toBlock	,toContactId	,line);
 		toBlock	._addDoorConnection(dir=="out"?"in":"out"	,toContactId	,this	,contactId	,line);
