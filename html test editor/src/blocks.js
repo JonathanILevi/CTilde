@@ -7,15 +7,22 @@ class Workspace {
 		this.el = div("div","workspace");
 		this.blocks	= {};
 		this.nextBlockId	= 0;
+		this.saveIds	= {};//What ids are used for ids in currently loading save;
 		this.lines	= [];
 		this.selectedBlocks = [];
 		this.selectedContact = null;
 	}
-	addBlock(saveData) {
-		let newBlock = new Block(this.nextBlockId+"", this,saveData);
-		this.blocks[this.nextBlockId+""] = newBlock;
+	addBlock(id=null) {
+		if (id==null) {
+			do {
+				id = this.nextBlockId+"";
+				this.nextBlockId++;
+			} while (Object.keys(this.blocks).indexOf(id) != -1);
+		}
+		let newBlock = new Block(id, this,saveData);
+		this.blocks[id] = newBlock;
 		this.el.appendChild(newBlock.el);
-		this.nextBlockId++;
+		return newBlock;
 	}
 	addLine(line) {
 		this.lines.push(line);
@@ -57,17 +64,43 @@ class Workspace {
 		}
 	}
 	
+	getBlockBySaveId(saveId) {
+		return this.blocks[this.getIdBySaveId(saveId)];
+	}
+	getIdBySaveId(saveId) {
+		if (Object.keys(this.saveIds).indexOf(saveId)!=-1) {
+			return this.saveIds[saveId];
+		}
+		else {
+			var id = saveId;
+			{
+				var addNum = 1;
+				while (Object.keys(this.blocks).indexOf(id) != -1) {
+					addNum++;
+					id = saveId+"fs"+addNum;
+				}
+			}
+			this.saveIds[saveId] = id;
+			return id;
+		}
+	}
 	
 	getSaveData() {
 		var saveData = [];
-		for (var block of this.blocks) {
-			saveData.push(block.getSaveData());
+		for (var blockId of Object.keys(this.blocks)) {
+			saveData.push(this.blocks[blockId].getSaveData());
 		}
 		return saveData;
 	}
 	loadSaveData(saveData) {
-		for (var blockData of JSON.parse(saveData)) {
-			this.addBlock(blockData);
+		this.saveIds = {};
+		for (var blockData of saveData) {
+			this.addBlock(this.getIdBySaveId(blockData.id))
+				.loadSaveData(blockData, false);
+		}
+		for (var blockData of saveData) {
+			this.getBlockBySaveId(blockData.id)
+				.loadSaveDataConnections(blockData);
 		}
 	}
 }
@@ -77,14 +110,11 @@ class Workspace {
 
 
 class Block {
-	constructor(id, workspace, saveData=null) {
+	constructor(id, workspace) {
 		this.id = id;
 		this.workspace = workspace;
 		
 		this.domBlock = new DomBlock(id);
-		if (saveData!=null) {
-			this.loadSaveData(saveData);
-		}
 		this.el=this.domBlock.getEl();
 		this.addMouseListeners();
 		
@@ -119,8 +149,13 @@ class Block {
 	}
 	onConnection(dir,contactId, otherSelected) {
 		if (otherSelected.dir!=dir) {
-			this.workspace.addLine(this.domBlock.addDoorConnection(dir,contactId,otherSelected.block.domBlock,otherSelected.contactId));
+			this.addConnection(dir, contactId, otherSelected.block, otherSelected.contactId);
 		}
+	}
+	
+	
+	addConnection(dir,contactId, otherBlock, otherContactId) {
+		this.workspace.addLine(this.domBlock.addDoorConnection(dir, contactId, otherBlock.domBlock, otherContactId));
 	}
 	
 	addMouseListeners() {
@@ -194,18 +229,35 @@ class Block {
 		data	.pos	= this.domBlock.getPos();
 		return data;
 	}
-	loadSaveData(data) {
+	loadSaveData(data, loadSaveDataConnections=true) {
 		this.domBlock.setHeaderText(data.header.text);
-		for (var i=0; i<data.ins.length; i++) {
-			this.domBlock.addDoor("in");
-			this.domBlock.setDoorText("in", i, data.ins[i].text);
-		}
-		for (var i=0; i<data.outs.length; i++) {
-			this.domBlock.addDoor("out");
-			this.domBlock.setDoorText("out", i, data.outs[i].text);
+		var doors = {"in":data.ins, "out":data.outs};
+		{
+			for (var dir of ["in","out"]) {
+				for (var i=0; i<doors[dir].length; i++) {
+					this.domBlock.addDoor(dir);
+					this.domBlock.setDoorText(dir, i, doors[dir][i].text);
+				}
+			}
 		}
 		this.domBlock.setPos(data.pos);
+		if (loadSaveDataConnections) {
+			this.loadSaveDataConnections(data);
+		}
 		return this.domBlock;
+	}
+	loadSaveDataConnections(data) {
+		var doors = {"in":data.ins, "out":data.outs};
+		{
+			for (var dir of ["in","out"]) {
+				for (var i=0; i<doors[dir].length; i++) {
+					for (var connection of doors[dir][i].connections) {
+						let otherBlock = workspace.getBlockBySaveId(connection.block);
+						this.addConnection(dir,i, otherBlock, otherBlock.domBlock.getDoorByText(dir=="in"?"out":"in", connection.contact))
+					}
+				}
+			}
+		}
 	}
 }
 
