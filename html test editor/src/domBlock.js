@@ -225,7 +225,7 @@ class DomBlock {
 	
 	_removeDoorConnection(dir, id, line) {
 		for (var i=this.getDoorConnections(dir,id).length-1; i>=0; i++) {
-			if (connection.line==line) {
+			if (this.getDoorConnections(dir,id)[i]==line) {
 				if (dir=="in"&&id==-1) {
 					this._headerConnections.splice(i,1);
 				}
