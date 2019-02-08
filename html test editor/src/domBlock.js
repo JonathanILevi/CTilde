@@ -1,6 +1,5 @@
 
 
-
 class DomBlock {
 	constructor(id) {
 		this.id = id;
@@ -235,13 +234,13 @@ class DomBlock {
 	}
 	
 	_removeDoorConnection(dir, id, line) {
-		for (var i=this.getDoorConnections(dir,id).length-1; i>=0; i++) {
+		for (var i=this.getDoorConnections(dir,id).length-1; i>=0; i--) {
 			if (this.getDoorConnections(dir,id)[i]==line) {
 				if (dir=="in"&&id==-1) {
 					this._headerConnections.splice(i,1);
 				}
 				else {
-					this._doorConnections.splice(i,1);
+					this._doorConnections[dir][id].splice(i,1);
 				}
 				break;
 			}

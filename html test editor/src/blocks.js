@@ -1,7 +1,5 @@
 
 
-
-
 class Workspace {
 	constructor() {
 		this.el = div("div","workspace");
@@ -18,7 +16,7 @@ class Workspace {
 				this.unselectAllBlocks();
 				this.unselectContact();
 			}
-			else if (e.key=="Delete") {
+			else if (e.key=="Delete" && e.ctrlKey) {
 				if (this.selectedContact==null) {
 					for (var block of this.selectedBlocks) {
 						this.removeBlock(block, false);
